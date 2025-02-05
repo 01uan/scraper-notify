@@ -1,7 +1,7 @@
 # scraper-notify
 
 ### TODOS
-- [ ] add discord notify
+- [x] add discord notify
 - [ ] perhaps add time expiration date for listings so del them
 
 
