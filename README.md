@@ -15,4 +15,5 @@
 ```env
 city=your_city
 query=your_query
+DISCORD_WEBHOOK_URL=your_webhook_url
 ```

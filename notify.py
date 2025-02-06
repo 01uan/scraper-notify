@@ -1,7 +1,14 @@
 from discord_webhook import DiscordWebhook, DiscordEmbed
+from dotenv import load_dotenv
+import os
+
+# Load environment variables
+load_dotenv()
+webhook_url = os.getenv("DISCORD_WEBHOOK_URL")  # Load the webhook URL from .env
 
 def notify_new_listings(new_listings):
-    webhook_url = 'YOUR_DISCORD_WEBHOOK_URL'  # Replace with your discord webhook
+    if not webhook_url:
+        raise ValueError("DISCORD_WEBHOOK_URL does not exist in the .env file or .env file does not exist")
 
     if new_listings:
         print("New listings found!")
