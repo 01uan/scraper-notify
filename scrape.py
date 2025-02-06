@@ -10,7 +10,7 @@ city = os.getenv("city")
 query = os.getenv("query")
 
 if not city or not query:
-    raise ValueError("Configure and populate .env file with the intended values")
+    raise ValueError(".env file does not exist or does not contain city and query variables")
 
 # Scrape Facebook Marketplace listings
 def get_marketplace_listings(cookies):
