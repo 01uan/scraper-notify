@@ -1,9 +1,9 @@
-
 import re
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
 import time
 import os
 from dotenv import load_dotenv
@@ -12,9 +12,8 @@ from dotenv import load_dotenv
 load_dotenv()
 city = os.getenv("city")
 query = os.getenv("query")
-chromedriver = os.getenv("chromedriver")
 
-if not city or not query or not chromedriver:
+if not city or not query:
     raise ValueError("Configure and populate .env file with the intended values")
 
 # configure Selenium WebDriver
@@ -26,7 +25,7 @@ def setup_driver():
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--enable-unsafe-webgl")
     chrome_options.add_argument("--enable-unsafe-swiftshader")
-    service = Service(executable_path=chromedriver)  # Update with your chromedriver path
+    service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=chrome_options)
     return driver
 
@@ -49,8 +48,6 @@ def get_marketplace_listings(cookies):
         # skipping empty uninitalized listings
         if item.text == "" or info[-1] == "Sponsored":
             continue  
-
-        
 
         # grab all the elements we need
         link = item.find_element(By.XPATH, ".//a").get_attribute("href") 
