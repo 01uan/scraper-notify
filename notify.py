@@ -11,7 +11,7 @@ def notify_new_listings(new_listings):
             # Create and send a Discord notification
             webhook = DiscordWebhook(url=webhook_url)
             embed = DiscordEmbed(title=listing['title'], description=f"Price: {listing['price']}\n[Link]({listing['link']})", color='03b2f8')
-            embed.set_image(url=listing['img'])  # Add the image URL to the embed
+            embed.set_image(url=listing['img'])
             webhook.add_embed(embed)
             response = webhook.execute()
     else:
