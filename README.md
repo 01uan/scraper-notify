@@ -15,5 +15,4 @@
 ```env
 city=your_city
 query=your_query
-chromedriver=path_to_your_chromedriver
 ```
