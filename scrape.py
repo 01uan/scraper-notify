@@ -15,7 +15,7 @@ if not city or not query:
 # Scrape Facebook Marketplace listings
 def get_marketplace_listings(cookies):
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)  # Set headless=True to run in headless mode
+        browser = p.chromium.launch(headless=True)  # Set headless=True to run in headless mode
         context = browser.new_context()
 
         # Load cookies to bypass login
@@ -44,7 +44,7 @@ def get_marketplace_listings(cookies):
                 "title": info[-2],
                 "location": info[-1],
                 "price": info[0],
-                "link": f"https://www.facebook.com{link}",  # Add the domain
+                "link": f"https://www.facebook.com{link}",
                 "img": img
             })
         
