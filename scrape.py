@@ -23,7 +23,7 @@ def get_marketplace_listings(cookies):
             context.add_cookies([cookie])
 
         page = context.new_page()
-        url = f"https://www.facebook.com/marketplace/{city}/search/?query={query}"
+        url = f"https://www.facebook.com/marketplace/{city}/search?sortBy=creation_time_descend&query={query}&exact=false"
         page.goto(url)
         time.sleep(5)  # Wait for the page to load
 
