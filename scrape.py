@@ -1,69 +1,52 @@
-
 import re
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
 import time
 import os
 from dotenv import load_dotenv
+from playwright.sync_api import sync_playwright
 
 # load environment variables
 load_dotenv()
 city = os.getenv("city")
 query = os.getenv("query")
-chromedriver = os.getenv("chromedriver")
 
-if not city or not query or not chromedriver:
-    raise ValueError("Configure and populate .env file with the intended values")
-
-# configure Selenium WebDriver
-def setup_driver():
-    chrome_options = Options()
-    # chrome_options.add_argument("--headless")  # Run in headless mode
-    chrome_options.add_argument("--disable-gpu")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--enable-unsafe-webgl")
-    chrome_options.add_argument("--enable-unsafe-swiftshader")
-    service = Service(executable_path=chromedriver)  # Update with your chromedriver path
-    driver = webdriver.Chrome(service=service, options=chrome_options)
-    return driver
+if not city or not query:
+    raise ValueError(".env file does not exist or does not contain city and query variables")
 
 # Scrape Facebook Marketplace listings
 def get_marketplace_listings(cookies):
-    driver = setup_driver()
-    url = f"https://www.facebook.com/marketplace/{city}/search/?query={query}"
-    driver.get(url) 
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)  # Set headless=True to run in headless mode
+        context = browser.new_context()
 
-    # load cookies to bypass login
-    for cookie in cookies:
-        driver.add_cookie(cookie)
-    driver.refresh()  # refresh to apply cookies
-    time.sleep(5)
+        # Load cookies to bypass login
+        for cookie in cookies:
+            context.add_cookies([cookie])
 
-    listings = []
-    items = driver.find_elements(By.XPATH, '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[2]/div/div/div[3]/div[1]/div[2]/div')  # Base XPath for listings
-    for item in items:
-        info = item.text.split("\n")
-        # skipping empty uninitalized listings
-        if item.text == "" or info[-1] == "Sponsored":
-            continue  
+        page = context.new_page()
+        url = f"https://www.facebook.com/marketplace/{city}/search/?query={query}"
+        page.goto(url)
+        time.sleep(5)  # Wait for the page to load
 
-        
+        listings = []
+        items = page.query_selector_all('xpath=/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[2]/div/div/div[3]/div[1]/div[2]/div')  # Base selector for listings
+        for item in items:
+            info = item.inner_text().split("\n")
+            # skipping empty uninitialized listings
+            if item.inner_text() == "" or info[-1] == "Sponsored":
+                continue  
 
-        # grab all the elements we need
-        link = item.find_element(By.XPATH, ".//a").get_attribute("href") 
-        img = item.find_element(By.XPATH, ".//img").get_attribute("src") 
+            # grab all the elements we need
+            link = item.query_selector("a").get_attribute("href")
+            img = item.query_selector("img").get_attribute("src")
 
-        listings.append({
-            "id": re.search(r'/item/(\d+)', link).group(1),
-            "title": info[-2], 
-            "location": info[-1], 
-            "price": info[0], 
-            "link": link, 
-            "img": img
+            listings.append({
+                "id": re.search(r'/item/(\d+)', link).group(1),
+                "title": info[-2],
+                "location": info[-1],
+                "price": info[0],
+                "link": f"https://www.facebook.com{link}",
+                "img": img
             })
         
-    driver.quit()
-    return listings
+        browser.close()
+        return listings
